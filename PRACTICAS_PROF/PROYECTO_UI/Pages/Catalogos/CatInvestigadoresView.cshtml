@@ -1,0 +1,222 @@
+﻿@page
+@model PROYECTO_UI.Pages.Catalogos.CatInvestigadoresViewModel
+@{
+}
+<script type="module">
+    import CreateTable from "../js/TableComponent.js";
+    import CreateDropDown from "../js/DropDownComponent.js";
+    const IdiomasInvestigador = [];
+    let Idiomas;
+    const CargarDatos = async () => {
+        let UrlP = "../api/Investigador/TakeInvestigatorData";
+        let response = await fetch(UrlP, {
+            method: "POST",
+            headers: {
+                'Content-Type': "application/json; charset=utf-8",
+                'Accept': "*/*"
+            }
+        });
+        response = await response.json();
+        console.log(response);
+        CreateTable(response[0], TableData, FunctionEdit);
+        CreateDropDown(response[1], DropPaises, "descripcion", "id_Pais");
+        CreateDropDown(response[2], DropInstituciones, "nombre", "id_Institucion");
+        Idiomas = response[3];
+        CreateTable(Idiomas, TableIdiomas, AddIdiomas, "Agregar");
+        txtBusquedaIdiomas.onchange = (ev) => {
+            const parametro = ev.target.value;
+            const IdiomasFiltrados = Idiomas.filter(x => x.descripcion.includes(parametro));
+            CreateTable(IdiomasFiltrados, TableIdiomas, AddIdiomas, "Agregar");
+        }
+        
+    }
+    const FunctionEdit = async (Item) => {
+
+    }
+    const AddIdiomas = (Idioma) => {
+        console.log(Idioma);
+        const id = IdiomasInvestigador.find(i => i.id_Idioma == Idioma.id_Idioma);
+        if (id == undefined || id == null) {
+            IdiomasInvestigador.push(Idioma);
+        }
+        console.log(IdiomasInvestigador);
+        IdiomasDiv.innerHTML = "";
+        IdiomasInvestigador.forEach((idioma) => {
+            const Idm = document.createElement("div");
+            Idm.innerText = idioma.descripcion;
+            Idm.className = "Idioma";
+            const btnIdm = document.createElement("input");
+            btnIdm.value = "x";
+            btnIdm.type = "button";
+            btnIdm.className = "btnClouse";
+            btnIdm.onclick = () => {
+                const indexElement = IdiomasInvestigador.indexOf(idioma);
+                IdiomasInvestigador.splice(indexElement, 1);
+                IdiomasDiv.removeChild(Idm);
+            }
+            Idm.appendChild(btnIdm);
+            //IdiomasDiv.appendChild(Idm);
+
+
+            const btnIdmtext = document.createElement("input");
+            btnIdmtext.value = "x";
+            btnIdmtext.type = "text";
+            btnIdmtext.className = "";
+            btnIdmtext.onclick = () => {
+
+            }
+            Idm.appendChild(btnIdmtext);
+
+            const selectMarc = document.createElement("select");
+            const Macas = [
+                { idMarca: 1, desc: "under" },
+                { idMarca: 2, desc: "nike"},
+                { idMarca: 3, desc: "nnn" }
+            ]
+            CreateDropDown(Macas, selectMarc, "desc", "idMarca");
+            selectMarc.className = "";
+            selectMarc.onchange = (ev) => {
+                idioma.idMarca = ev.target.value;
+                console.log(idioma)
+            }
+            Idm.appendChild(selectMarc);
+            IdiomasDiv.appendChild(Idm);
+        })
+    }
+    window.onload = async () => {
+        BtnSave.onclick = async () => {
+            let Url = "../api/Investigador/SaveInvestigador";
+            const ObjInst = {
+                Id_Investigador: TxtInvestigador.value,
+                Nombres: TxtNombres.value,
+                Apellidos: TxtApellidos.value,
+                FechaNac: TxtFechaN.value,
+                Sexo: DropSexo.value,
+                DNI: TxtDNI.value,
+                Correo_institucional: TxtEMAIL.value,
+                Id_Pais_Origen: DropPaises.value,
+                Id_Institucion: DropInstituciones.value,
+                Indice_H: TxtIndiceH.value,
+                Estado: DropEstado.value,
+                Idiomas: IdiomasInvestigador,
+            }
+            let flag = true;
+            for (var prop in ObjInst) {
+                if (ObjInst[prop] == "") {
+                    flag = false;
+                    alert("la propiedad " + prop + " es requerida");
+                    break;
+                }
+            }
+            if (!flag) {
+                return;
+            }
+            let response = await fetch(Url, {
+                method: "POST",
+                headers: {
+                    'Content-Type': "application/json; charset=utf-8",
+                    'Accept': "*/*"
+                },
+                body: JSON.stringify(ObjInst)
+            });
+            response = await response.json();
+            if (response == true) {
+                alert("Datos Guardados");
+                //window.location.reload();
+            }
+        }
+        CargarDatos();
+        BtnModalIdiomas.onclick = () => {
+            modalFunction(ModalIdiomas); 
+        }
+        BtnCerrarIdiomas.onclick = () => {
+            modalFunction(ModalIdiomas);
+        }
+    }
+</script>
+<div class="FrmContainer">
+    <div hidden="true">
+        Id Pais:
+        <input class="TxtForm" type="number" id="TxtInvestigador" value="-1" />
+    </div>
+    <div>
+        Nombres:
+        <input class="TxtForm" type="text" id="TxtNombres" placeholder="Propiedad..." />
+    </div>
+    <div>
+        Apellidos:
+        <input class="TxtForm" type="text" id="TxtApellidos" placeholder="Propiedad..." />
+    </div>
+    <div>
+        Fecha de Nacimiento:
+        <input class="TxtForm" type="date" id="TxtFechaN" placeholder="Propiedad..." />
+    </div>
+    <div>
+        DNI:
+        <input class="TxtForm" type="text" id="TxtDNI" placeholder="Propiedad..." />
+    </div>
+    <div>
+        Email:
+        <input class="TxtForm" type="email" id="TxtEMAIL" placeholder="Propiedad..." />
+    </div>
+    <div>
+        Sexo:
+        <select class="TxtForm" id="DropSexo">
+            <option value="Masculino">Masculino</option>
+            <option value="Femenino">Femenino</option>
+        </select>
+    </div>
+    <div>
+        Estado:
+        <select class="TxtForm" id="DropEstado">
+            <option value="ACT">Activo</option>
+            <option value="INACT">Inactivo</option>
+        </select>
+    </div>
+    <div>
+        INdice H:
+        <input class="TxtForm" type="email" id="TxtIndiceH" placeholder="Propiedad..." />
+    </div>
+    <div>
+        Paises:
+        <select class="TxtForm" id="DropPaises">
+        </select>
+    </div>
+    <div>
+        Instituciones:
+        <select class="TxtForm" id="DropInstituciones">
+        </select>
+    </div>
+    <div>
+        Idiomas:
+        <div id="IdiomasDiv"></div>
+    </div>
+</div>
+<div class="FrmContainer">
+    <div>
+        <input class="BTN BTNOk2" type="button" id="BtnSave" value="Guardar" />
+        <input class="BTN BTNOk2" type="button" id="BtnModalIdiomas" value="Agregar Idioma" />
+    </div>
+</div>
+<table id="TableData" class="FrmTable">
+    <thead>
+    </thead>
+    <tbody>
+    </tbody>
+</table>
+<div id="ModalIdiomas" class="ModalContent">
+    <div class="ContainerForm">
+        <input type="text" id="txtBusquedaIdiomas" value="" />
+        <table id="TableIdiomas" class="FrmTable">
+            <thead>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+        <div class="FrmContainer">
+            <div>             
+                <input class="BTN BTNOk2" type="button" id="BtnCerrarIdiomas" value="Cerrar" />
+            </div>
+        </div>
+    </div>
+</div>

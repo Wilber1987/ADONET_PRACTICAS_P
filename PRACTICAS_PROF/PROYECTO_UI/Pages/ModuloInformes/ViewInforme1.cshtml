@@ -1,0 +1,103 @@
+﻿@page
+@model PROYECTO_UI.Pages.ModuloInformes.ViewInforme1Model
+@{
+}
+<script type="module">
+    import CreateTableInforme from "../js/InformeComponent.js";
+    const CargarDatos = async () => {
+        let UrlP = "../api/Informes/TakeInformeEjemplo1";
+        const ObjInst = {
+            Params: [Fecha1.value, Fecha2.value]
+        }
+        let response = await fetch(UrlP, {
+            method: "POST",
+            headers: {
+                'Content-Type': "application/json; charset=utf-8",
+                'Accept': "*/*"
+            },
+            body: JSON.stringify(ObjInst)
+        });
+        response = await response.json();
+        console.log(response);
+        labelSubtitle.innerText = `Informe de matriculados por carrera 
+        Del ${Fecha1.value} al ${Fecha2.value}`;
+        CreateTableInforme(response, TableData, ["descipcion", "num"]);
+        let sum = 0;
+        response.forEach(element => {
+            sum = sum + element.num;
+        });
+
+        LabelTotal.append(" " + sum)
+    }
+    window.onload = async () => {       
+        CargarDatos();
+        BtnUpdate.onclick = () => {
+            CargarDatos();
+        }
+        BtnPrint.onclick = () => {
+            const PrintNode = Page.innerHTML;
+            const ventimp = window.open(' ', 'popimpr');
+            ventimp.document.write(PrintNode);
+            ventimp.document.close();
+            ventimp.print();
+            ventimp.close();
+        }
+    }
+</script>
+
+<div class="FrmContainer">   
+        <input type="date" id="Fecha1" value="1990-01-01" />
+        <input type="date" id="Fecha2" value="2022-01-01" /> 
+</div>
+<div class="FrmContainer">
+    <input class="BTN BTNOk2" type="button" id="BtnPrint" value="Imprimir" />
+    <input class="BTN BTNOk2" type="button" id="BtnUpdate" value="Actualizar" />
+</div>
+<div class="InformeContainer">
+    <div class="page" id="Page">
+        <style>
+            .InformeContainer{
+                background-color: #b9b9b9;
+                padding: 20px;
+                height: 600px;
+                overflow: auto;
+                border: solid 2px #888;
+            }
+            .page {
+                background-color: #fff;
+                width: 17cm;
+                height: 25.7cm;
+                display: block;
+                margin: 0 auto;
+                margin-bottom: 0.5cm;
+                box-shadow: 0 0 0.5cm rgba(0,0,0,0.5);
+                padding: 1cm 2cm;
+            }
+            h1, h4 {
+                text-align: center;
+            }
+            .TableInforme {
+                width: 100%;
+                margin-bottom: 30px;
+                
+            }
+                .TableInforme td, .TableInforme th {
+                   border-bottom: solid 1px #b9b9b9;
+                }
+        </style>
+        <section>
+            <h1>
+                Informe
+            </h1>
+            <h4 id="labelSubtitle">Informe de matriculados por carrera </h4>
+        </section>
+        <table id="TableData" class="TableInforme">
+            <thead>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+        <hr />
+        <label id="LabelTotal"> Total: </label>
+    </div>    
+</div>

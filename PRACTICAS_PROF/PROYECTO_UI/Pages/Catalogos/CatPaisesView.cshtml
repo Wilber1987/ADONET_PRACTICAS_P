@@ -1,0 +1,80 @@
+﻿@page
+@model PROYECTO_UI.Pages.Catalogos.CatPaisesViewModel
+@{
+}
+<script type="module">
+    import CreateTable from "../js/TableComponent.js";
+    const CargarDatos = async () => {
+        let UrlP = "../api/Values/GetPaises";
+        let response = await fetch(UrlP, {
+            method: "POST",
+            headers: {
+                'Content-Type': "application/json; charset=utf-8",
+                'Accept': "*/*"
+            }
+        });
+        response = await response.json();
+        console.log(response);
+        CreateTable(response, TableData, FunctionEdit);
+    }
+    const FunctionEdit = async (Item) => {
+        TxtIdPais.value = Item.id_Pais;
+        DropEstado.value = Item.estado;
+        TxtDescripcion.value = Item.descripcion;
+    }
+    window.onload = async () => {
+        BtnSave.onclick = async () => {
+            const ObjInst = {
+                Id_Pais: TxtIdPais.value,
+                Estado: DropEstado.value,
+                Descripcion: TxtDescripcion.value
+            }
+            let Url = "../api/Values/SavePais";
+            let response = await fetch(Url, {
+                method: "POST",
+                headers: {
+                    'Content-Type': "application/json; charset=utf-8",
+                    'Accept': "*/*"
+                },
+                body: JSON.stringify(ObjInst)
+            });
+            response = await response.json();
+            if (response == true) {
+                alert("Datos Guardados");
+                CargarDatos();
+                TxtIdPais.value = "-1";               
+                TxtDescripcion.value = "";
+            }
+        }
+        //cargar paises
+        CargarDatos();
+    }
+</script>
+<div class="FrmContainer">
+    <div hidden="true">
+        Id Pais:
+        <input class="TxtForm" type="number" id="TxtIdPais" value="-1" />
+    </div>
+    <div>
+        Estado:
+        <select class="TxtForm" id="DropEstado">
+            <option value="ACT">Activo</option>
+            <option value="INACT">Inactivo</option>
+        </select>
+    </div>
+    <div>
+        Descripcion:
+        <input class="TxtForm" type="text" id="TxtDescripcion" placeholder="Propiedad..." />
+    </div>    
+</div>
+<div class="FrmContainer">
+    <div>
+        <input class="BTN BTNOk2" type="button" id="BtnSave" value="Guardar" />
+    </div>    
+</div>
+<table id="TableData" class="FrmTable">
+    <thead>       
+    </thead>
+    <tbody>        
+    </tbody>
+</table>
